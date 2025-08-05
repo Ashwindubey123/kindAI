@@ -14,6 +14,9 @@ const app = express();
 app.get('/', (req, res) => {
   res.send('server on');
 });
+// Prevent 500 error when browser requests /favicon.ico
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 
 // Wrap async setup logic in an IIFE
 (async () => {
