@@ -1,10 +1,11 @@
-import express from 'express';
+ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
-import { requireAuth } from '@clerk/express'; // ✅ updated import
+import { requireAuth } from '@clerk/express';
 import aiRouter from './routes/aiRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import connectCloudinary from './configs/cloudinary.js';
+import serverless from 'serverless-http';
 
 const app = express();
 
@@ -12,31 +13,32 @@ const startServer = async () => {
   try {
     await connectCloudinary();
 
-    // ✅ Setup CORS
+    // Middleware setup
     app.use(cors({
-      origin: 'http://localhost:5173',
+      origin: process.env.CLIENT_URL || 'http://localhost:5173',
       credentials: true,
     }));
-
     app.use(express.json());
 
-    // ✅ Test protected route
+    // Routes
     app.get('/test', requireAuth(), (req, res) => {
       res.json({ userId: req.auth.userId });
     });
 
-    // ✅ Use requireAuth on protected routes
     app.use('/api/ai', requireAuth(), aiRouter);
     app.use('/api/user', requireAuth(), userRouter);
 
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}`);
-    });
+    // ✅ Don't start server manually in Vercel
+    // const PORT = process.env.PORT || 5000;
+    // app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
   } catch (error) {
-    console.error('❌ Server failed to start:', error.message);
-    process.exit(1);
+    console.error('❌ Failed to start:', error.message);
   }
 };
 
-startServer();
+// ✅ Only run setup logic
+await startServer();
+
+// ✅ Export handler for Vercel
+export default serverless(app);
