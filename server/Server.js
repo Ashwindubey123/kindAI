@@ -9,7 +9,9 @@ import serverless from 'serverless-http';
 
 const app = express();
 
-
+app.get('/', (req, res)=>{
+  res.send("server on");
+})
   try {
     await connectCloudinary();
 
